@@ -34,8 +34,10 @@ Pan2.ar(carrier*modulator, 0);
 
 //FM
 (
-{arg carrfreq=440, modfreq=50, moddepth=50.1;
-Pan2.ar(SinOsc.ar(carrfreq + (moddepth*SinOsc.ar(modfreq)),0,0.25));
+{arg carrfreq=440, modfreq=100, moddepth=50.1;
+		Pan2.ar(
+		SinOsc.ar(carrfreq + (moddepth*SinOsc.ar(modfreq)),0,0.25) * LPF.ar(WhiteNoise.ar(1, 0), 800, 1, 0)
+	);
 }.scope;
 )
 
@@ -47,7 +49,10 @@ Env.perc(0.05,0.5,1.0,-2).plot; //arguments attackTime, releaseTime, level, curv
 //kick
 (
 {
-	Pan2.ar(SinOsc.ar(80,0,0.1)*EnvGen.kr(Env.perc(0.01,0.4,1.0,1)), 0);
+	Pan2.ar(
+		SinOsc.ar(80,0,0.1)*EnvGen.kr(Env.perc(0.01,0.4,1.0,1)),
+		0
+	);
 }.scope;
 )
 
@@ -56,5 +61,26 @@ Env.perc(0.05,0.5,1.0,-2).plot; //arguments attackTime, releaseTime, level, curv
 {Pan2.ar(Blip.ar(440, 200, 0.5, 0));}.scope;
 )
 
+/*** envgens.scd: generating amplitude envelopes ***/
+(
+{ var dur=2, envtri, trig, envgen, output;
+	envtri = Env([0.01, 0.707, 0.01], [dur/2, dur/2], \exp);
+	trig = Impulse.kr(1/dur);
+	envgen = EnvGen.ar(envtri, trig);
+	output = SinOsc.ar(mul:envgen);
+}.play
+)
+
+(
+{
+	var dur=2, envadsr, gate, envgen, output;
+	envadsr = Env.adsr(sustainLevel:0.707);
+	gate = SinOsc.ar(1/dur, mul:1/2);
+	envgen = EnvGen.ar(envadsr, gate);
+	output = SinOsc.ar*envgen;
+}.play
+)
+
+Fitton, Peter. Programming digital music with SuperCollider (Kindle の位置No.387-388). www.fittonmusic.com. Kindle 版.
 
 s.quit;
